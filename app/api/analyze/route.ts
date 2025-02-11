@@ -4,7 +4,7 @@ import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import admin from 'firebase-admin';
 
-// Initialize Firebase Admin (even if not used in this incremental version, keeping it for later integration)
+// Initialize Firebase Admin (only once in your codebase)
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -12,12 +12,12 @@ if (!admin.apps.length) {
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
       privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
     }),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || '',
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'your-bucket-name.appspot.com',
   });
 }
 
-// (Firebase variables are defined here for later use)
-const bucket = admin.storage().bucket();
+// Retrieve the bucket (explicitly specifying the bucket name if needed)
+const bucket = admin.storage().bucket(process.env.FIREBASE_STORAGE_BUCKET || 'your-bucket-name.appspot.com');
 const db = admin.firestore();
 
 export const runtime = 'nodejs';
@@ -31,59 +31,68 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
 
     // 2. Extract fields from the form
-    console.log("Extracting email and file...");
+    console.log("Extracting email and resume input...");
     const email = formData.get('email') as string | null;
-    const file = formData.get('resume') as File | null;
-    if (!email || !file) {
-      console.error("Missing email or file");
+    const resumeFile = formData.get('resume') as File | null;
+    const manualResume = formData.get('manualResume') as string | null;
+
+    if (!email || (!resumeFile && !manualResume)) {
+      console.error("Missing email or resume input");
       return NextResponse.json(
-        { error: 'Email and resume file are required.' },
+        { error: 'Email and resume file or manual resume information are required.' },
         { status: 400 }
       );
     }
-    console.log("File name:", file.name);
-    console.log("File size:", file.size);
 
-    // 3. Convert the file to a Node.js Buffer for parsing.
-    console.log("Converting file to buffer...");
-    const arrayBuffer = await file.arrayBuffer();
-    const fileBuffer = Buffer.from(arrayBuffer);
-    console.log("Buffer snippet:", fileBuffer.toString('utf-8', 0, 4));
-    console.log("Buffer length:", fileBuffer.length);
-
-    // 4. Determine file type from the web File object (MIME type)
-    const fileType = file.type;
-    console.log("File type:", fileType);
-
-    // 5. Parse the file content
+    // 3. Determine the resume text
     let resumeText = '';
-    console.log("Parsing file content...");
-    if (fileType === 'application/pdf') {
-      console.log("Using pdf-parse...");
-      try {
-        const data = await pdfParse(fileBuffer);
-        resumeText = data.text;
-      } catch (parseErr) {
-        console.error("Error parsing resume file:", parseErr);
-        return NextResponse.json(
-          { error: 'Error parsing resume file' },
-          { status: 500 }
-        );
-      }
-    } else if (
-      fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-      fileType === 'application/msword'
-    ) {
-      console.log("Using mammoth...");
-      const result = await mammoth.extractRawText({ buffer: fileBuffer });
-      resumeText = result.value;
-    } else {
-      console.log("Falling back to plain text conversion...");
-      resumeText = fileBuffer.toString('utf-8');
-    }
-    console.log("Resume text length:", resumeText.length);
+    if (resumeFile) {
+      // Process the uploaded file
+      console.log("File provided. Processing resume file...");
+      console.log("File name:", resumeFile.name);
+      console.log("File size:", resumeFile.size);
 
-    // 6. Build the prompt for OpenAI using the extracted resume text
+      console.log("Converting file to buffer...");
+      const arrayBuffer = await resumeFile.arrayBuffer();
+      const fileBuffer = Buffer.from(arrayBuffer);
+      console.log("Buffer snippet:", fileBuffer.toString('utf-8', 0, 4));
+      console.log("Buffer length:", fileBuffer.length);
+
+      const fileType = resumeFile.type;
+      console.log("File type:", fileType);
+
+      console.log("Parsing file content...");
+      if (fileType === 'application/pdf') {
+        console.log("Using pdf-parse...");
+        try {
+          const data = await pdfParse(fileBuffer);
+          resumeText = data.text;
+        } catch (parseErr) {
+          console.error("Error parsing resume file:", parseErr);
+          return NextResponse.json(
+            { error: 'Error parsing resume file' },
+            { status: 500 }
+          );
+        }
+      } else if (
+        fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+        fileType === 'application/msword'
+      ) {
+        console.log("Using mammoth...");
+        const result = await mammoth.extractRawText({ buffer: fileBuffer });
+        resumeText = result.value;
+      } else {
+        console.log("Falling back to plain text conversion...");
+        resumeText = fileBuffer.toString('utf-8');
+      }
+    } else if (manualResume) {
+      // Use the manual resume text provided by the user
+      console.log("Manual resume input provided.");
+      resumeText = manualResume;
+    }
+    console.log("Final resume text length:", resumeText.length);
+
+    // 4. Build the prompt for OpenAI using the extracted resume text
     console.log("Building prompt for OpenAI...");
     const prompt = `
 You are an AI career analyst designed to evaluate resumes for individuals considering returning to school to upskill. Your task is to analyze the resume below and rank the user's proficiency in the following predefined skill categories on a scale of 1 to 10. The ranking should be based on work experience, education, certifications, and keywords found in the resume. If a skill is not mentioned or inferred, it should be ranked as 1.
@@ -174,7 +183,7 @@ Please output only valid JSON.
     `;
     console.log("Calling OpenAI with prompt (first 200 chars):", prompt.substring(0, 200));
 
-    // 7. Call OpenAI using the correct integration
+    // 5. Call OpenAI using the correct integration
     console.log("Calling OpenAI...");
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -191,7 +200,7 @@ Please output only valid JSON.
     }
     console.log("OpenAI response received (first 200 chars):", responseContent.substring(0, 200));
 
-    // 8. Parse the JSON output from OpenAI
+    // 6. Parse the JSON output from OpenAI
     let analysisResults;
     try {
       analysisResults = JSON.parse(responseContent);
@@ -204,7 +213,7 @@ Please output only valid JSON.
     }
     console.log("OpenAI analysis results parsed.");
 
-    // 9. Return the final JSON response with the analysis results
+    // 7. Return the final JSON response with the analysis results
     console.log("Returning final response...");
     return NextResponse.json(
       {
