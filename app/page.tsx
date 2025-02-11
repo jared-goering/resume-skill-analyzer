@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
-
-// Import your shadcn/ui components
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,13 +15,13 @@ import { Progress } from "@/components/ui/progress";
 import { RadialSkillChart } from "./components/RadialSkillChart";
 
 export default function Home() {
-  // Mode toggle: "upload" or "questions"
   const [mode, setMode] = useState<"upload" | "questions">("upload");
 
+  // Basic form states
   const [email, setEmail] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
-  // State for manual input mode
+  // Q&A states
   const [role, setRole] = useState("");
   const [responsibilities, setResponsibilities] = useState("");
   const [keySkills, setKeySkills] = useState("");
@@ -29,20 +33,20 @@ export default function Home() {
   const [trainingCertifications, setTrainingCertifications] = useState("");
   const [strengthsOpportunities, setStrengthsOpportunities] = useState("");
 
-  const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const analysisResults = {
-    "Professional Skills": { Communication: 8, TimeManagement: 7 },
-    "Innovation Skills": { Creativity: 9, "Risk Taking": 6 },
-    "Digital Skills": { "Data Visualization": 7 },
-    "Leadership Skills": { "Strategic Thinking": 8 },
+  const titleColorMap: Record<string, string> = {
+    "Professional Skills": "text-[#A4F5A6]",
+    "Innovation Skills": "text-[#B3A1FF]",
+    "Digital Skills":     "text-[#F2A3B3]",
+    "Leadership Skills":  "text-[#F8D57E]",
   };
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Basic validation
     if (!email) {
       setError("Please provide your email.");
       return;
@@ -51,10 +55,23 @@ export default function Home() {
       setError("Please provide your resume file.");
       return;
     }
-    if (mode === "questions" && (!role || !responsibilities || !keySkills || !projects || !accomplishments || !technicalTools || !proficientTools || !communicationTeamwork || !trainingCertifications || !strengthsOpportunities)) {
-      setError("Please answer all the questions.");
+    if (
+      mode === "questions" &&
+      (!role ||
+        !responsibilities ||
+        !keySkills ||
+        !projects ||
+        !accomplishments ||
+        !technicalTools ||
+        !proficientTools ||
+        !communicationTeamwork ||
+        !trainingCertifications ||
+        !strengthsOpportunities)
+    ) {
+      setError("Please fill out all the questions.");
       return;
     }
+
     setLoading(true);
     setError("");
 
@@ -62,9 +79,10 @@ export default function Home() {
     formData.append("email", email);
 
     if (mode === "upload") {
+      // Attach the file if using "Upload" mode
       formData.append("resume", file!);
     } else {
-      // Combine the manual answers into a resume-like text block
+      // Combine the Q&A fields into a single text block
       const manualResumeText = `
 Role in the Last 18 Months: ${role}
 Main Responsibilities: ${responsibilities}
@@ -98,217 +116,388 @@ Strongest Skills & Improvement Opportunities: ${strengthsOpportunities}
     } catch (err) {
       setError("Error processing request");
     }
+
     setLoading(false);
   };
 
-  return (
-    <div className="container mx-auto py-8">
-      <Card className="mx-auto max-w-xl">
-        <CardHeader>
-          <CardTitle>Resume Skill Analyzer</CardTitle>
-          <CardDescription>Analyze your resume using AI</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Mode toggle buttons */}
-          <div className="flex gap-4 mb-4">
-            <Button
-              type="button"
-              variant={mode === "upload" ? "default" : "outline"}
-              onClick={() => setMode("upload")}
-            >
-              Upload Resume
-            </Button>
-            <Button
-              type="button"
-              variant={mode === "questions" ? "default" : "outline"}
-              onClick={() => setMode("questions")}
-            >
-              Answer Questions
-            </Button>
-          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1"
-              />
+  // Helper function to compute the average of a skill category
+function getAverage(skills: Record<string, number>): number {
+  const vals = Object.values(skills);
+  if (!vals.length) return 0;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+  // If there's no analysis, render only the upload/questions card centered on the page
+  if (!analysis) {
+    return (
+<div className="container mx-auto flex justify-center py-8">
+<Card className="w-full max-w-xl">
+          <CardHeader>
+            <CardTitle>Resume Skill Analyzer</CardTitle>
+            <CardDescription>Analyze your resume using AI</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Mode toggle */}
+            <div className="flex gap-4 mb-4">
+              <Button
+                type="button"
+                variant={mode === "upload" ? "default" : "outline"}
+                onClick={() => setMode("upload")}
+              >
+                Upload Resume
+              </Button>
+              <Button
+                type="button"
+                variant={mode === "questions" ? "default" : "outline"}
+                onClick={() => setMode("questions")}
+              >
+                Answer Questions
+              </Button>
             </div>
 
-            {mode === "upload" ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="resume">Upload Resume (PDF or DOCX)</Label>
+                <Label>Email</Label>
                 <Input
-                  id="resume"
-                  type="file"
-                  accept=".pdf,.docx,.doc"
-                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="mt-1"
                 />
               </div>
-            ) : (
-              <>
-                <div>
-                  <Label htmlFor="role">Role in the Last 18 Months</Label>
-                  <Input
-                    id="role"
-                    type="text"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="responsibilities">Main Responsibilities</Label>
-                  <Input
-                    id="responsibilities"
-                    type="text"
-                    value={responsibilities}
-                    onChange={(e) => setResponsibilities(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="keySkills">Key Skills Utilized</Label>
-                  <Input
-                    id="keySkills"
-                    type="text"
-                    value={keySkills}
-                    onChange={(e) => setKeySkills(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="projects">Key Projects/Initiatives</Label>
-                  <Input
-                    id="projects"
-                    type="text"
-                    value={projects}
-                    onChange={(e) => setProjects(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="accomplishments">Most Significant Accomplishments</Label>
-                  <Input
-                    id="accomplishments"
-                    type="text"
-                    value={accomplishments}
-                    onChange={(e) => setAccomplishments(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="technicalTools">Technical Tools/Platforms Worked With</Label>
-                  <Input
-                    id="technicalTools"
-                    type="text"
-                    value={technicalTools}
-                    onChange={(e) => setTechnicalTools(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="proficientTools">Tools You Are Most Proficient In</Label>
-                  <Input
-                    id="proficientTools"
-                    type="text"
-                    value={proficientTools}
-                    onChange={(e) => setProficientTools(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="communicationTeamwork">Communication and Teamwork Skills</Label>
-                  <Input
-                    id="communicationTeamwork"
-                    type="text"
-                    value={communicationTeamwork}
-                    onChange={(e) => setCommunicationTeamwork(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="trainingCertifications">Recent Training or Certifications</Label>
-                  <Input
-                    id="trainingCertifications"
-                    type="text"
-                    value={trainingCertifications}
-                    onChange={(e) => setTrainingCertifications(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="strengthsOpportunities">Strongest Skills and Improvement Opportunities</Label>
-                  <Input
-                    id="strengthsOpportunities"
-                    type="text"
-                    value={strengthsOpportunities}
-                    onChange={(e) => setStrengthsOpportunities(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-              </>
-            )}
 
-            <Button type="submit">Analyze Resume</Button>
-          </form>
+              {mode === "upload" ? (
+                <div>
+                  <Label>Upload Resume (PDF or DOCX)</Label>
+                  <Input
+                    type="file"
+                    accept=".pdf,.docx,.doc"
+                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                    required
+                  />
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <Label>Role in the Last 18 Months</Label>
+                    <Input
+                      type="text"
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Main Responsibilities</Label>
+                    <Input
+                      type="text"
+                      value={responsibilities}
+                      onChange={(e) => setResponsibilities(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Key Skills Utilized</Label>
+                    <Input
+                      type="text"
+                      value={keySkills}
+                      onChange={(e) => setKeySkills(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Key Projects/Initiatives</Label>
+                    <Input
+                      type="text"
+                      value={projects}
+                      onChange={(e) => setProjects(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Significant Accomplishments</Label>
+                    <Input
+                      type="text"
+                      value={accomplishments}
+                      onChange={(e) => setAccomplishments(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Technical Tools/Platforms Worked With</Label>
+                    <Input
+                      type="text"
+                      value={technicalTools}
+                      onChange={(e) => setTechnicalTools(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Tools You Are Most Proficient In</Label>
+                    <Input
+                      type="text"
+                      value={proficientTools}
+                      onChange={(e) => setProficientTools(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Communication and Teamwork Skills</Label>
+                    <Input
+                      type="text"
+                      value={communicationTeamwork}
+                      onChange={(e) => setCommunicationTeamwork(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Recent Training or Certifications</Label>
+                    <Input
+                      type="text"
+                      value={trainingCertifications}
+                      onChange={(e) => setTrainingCertifications(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Strongest Skills & Improvement Opportunities</Label>
+                    <Input
+                      type="text"
+                      value={strengthsOpportunities}
+                      onChange={(e) => setStrengthsOpportunities(e.target.value)}
+                      required
+                    />
+                  </div>
+                </>
+              )}
 
-          {loading && <p className="mt-4">Analyzing resume, please wait...</p>}
-          {error && <p className="mt-4 text-red-500">{error}</p>}
+              <Button type="submit">Analyze Resume</Button>
+            </form>
 
-          {analysis && analysis.analysisResults ? (
-  <div className="mt-8">
-    <h2 className="text-lg font-bold mb-2">Analysis Results</h2>
-
-    {/* Show the radial chart ONCE, before listing sub-skills */}
-    <div className="mb-8">
-      <h1 className="text-2xl font-bold mb-4">Skills Overview</h1>
-      <RadialSkillChart analysisResults={analysis.analysisResults} />
-    </div>
-
-    {/* Now list each category’s sub-skills */}
-    {Object.keys(analysis.analysisResults).map((category) => (
-      <div key={category} className="mb-4">
-        <h3 className="font-semibold mb-2">{category}</h3>
-        <div className="flex flex-wrap gap-4">
-          {Object.entries(
-            analysis.analysisResults[category] as Record<string, number>
-          ).map(([skill, score]) => (
-            <div key={skill} className="w-40">
-              <p className="text-sm mb-1">{skill}</p>
-              <Progress value={(score / 10) * 100} className="w-full" />
-              <p className="text-xs mt-1 text-center">{score}/10</p>
-            </div>
-          ))}
-        </div>
+            {loading && <p className="mt-4">Analyzing resume, please wait...</p>}
+            {error && <p className="mt-4 text-red-500">{error}</p>}
+          </CardContent>
+        </Card>
       </div>
-    ))}
-  </div>
-) : (
-  <div>
-    <h3 className="font-semibold mb-2">Resume Text Preview</h3>
-    <p>{analysis?.resumeTextSnippet}</p>
-  </div>
-)}
-        </CardContent>
-      </Card>
+    );
+  }
+
+  // If analysis is available, display a three-column grid
+  return (
+    <div className="container mx-auto py-8">
+      <div className="grid grid-cols-3 gap-6 items-start">
+      {/* Column 1: Upload/Questions Card */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Resume Skill Analyzer</CardTitle>
+            <CardDescription>Analyze your resume using AI</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Mode toggle */}
+            <div className="flex gap-4 mb-4">
+              <Button
+                type="button"
+                variant={mode === "upload" ? "default" : "outline"}
+                onClick={() => setMode("upload")}
+              >
+                Upload Resume
+              </Button>
+              <Button
+                type="button"
+                variant={mode === "questions" ? "default" : "outline"}
+                onClick={() => setMode("questions")}
+              >
+                Answer Questions
+              </Button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              {mode === "upload" ? (
+                <div>
+                  <Label>Upload Resume (PDF or DOCX)</Label>
+                  <Input
+                    type="file"
+                    accept=".pdf,.docx,.doc"
+                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                    required
+                  />
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <Label>Role in the Last 18 Months</Label>
+                    <Input
+                      type="text"
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Main Responsibilities</Label>
+                    <Input
+                      type="text"
+                      value={responsibilities}
+                      onChange={(e) => setResponsibilities(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Key Skills Utilized</Label>
+                    <Input
+                      type="text"
+                      value={keySkills}
+                      onChange={(e) => setKeySkills(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Key Projects/Initiatives</Label>
+                    <Input
+                      type="text"
+                      value={projects}
+                      onChange={(e) => setProjects(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Significant Accomplishments</Label>
+                    <Input
+                      type="text"
+                      value={accomplishments}
+                      onChange={(e) => setAccomplishments(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Technical Tools/Platforms Worked With</Label>
+                    <Input
+                      type="text"
+                      value={technicalTools}
+                      onChange={(e) => setTechnicalTools(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Tools You Are Most Proficient In</Label>
+                    <Input
+                      type="text"
+                      value={proficientTools}
+                      onChange={(e) => setProficientTools(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Communication and Teamwork Skills</Label>
+                    <Input
+                      type="text"
+                      value={communicationTeamwork}
+                      onChange={(e) => setCommunicationTeamwork(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Recent Training or Certifications</Label>
+                    <Input
+                      type="text"
+                      value={trainingCertifications}
+                      onChange={(e) => setTrainingCertifications(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Strongest Skills & Improvement Opportunities</Label>
+                    <Input
+                      type="text"
+                      value={strengthsOpportunities}
+                      onChange={(e) => setStrengthsOpportunities(e.target.value)}
+                      required
+                    />
+                  </div>
+                </>
+              )}
+
+              <Button type="submit">Analyze Resume</Button>
+            </form>
+
+            {loading && <p className="mt-4">Analyzing resume, please wait...</p>}
+            {error && <p className="mt-4 text-red-500">{error}</p>}
+          </CardContent>
+        </Card>
+
+        {/* Column 2: Radial Chart Card */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Skills Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analysis?.analysisResults ? (
+              <RadialSkillChart analysisResults={analysis.analysisResults} />
+            ) : (
+              <p>No analysis available yet.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Column 3: Detailed Skill Breakdown Card with inner cards */}
+        {/* Column 3: Detailed Skill Breakdown Card with inner cards */}
+<Card className="col-span-1">
+  <CardHeader>
+    <CardTitle>Detailed Skill Breakdown</CardTitle>
+  </CardHeader>
+  <CardContent>
+    {analysis?.analysisResults ? (
+      <div className="space-y-4">
+        {Object.keys(analysis.analysisResults).map((category) => {
+          const average = getAverage(
+            analysis.analysisResults[category] as Record<string, number>
+          );
+          return (
+            <Card key={category} className="mb-4">
+              <CardHeader>
+                <CardTitle className={titleColorMap[category] || ""}>
+                  {category}
+                </CardTitle>
+                {/* Display the average underneath the title */}
+                <p className={`text-sm ${titleColorMap[category] || ""}`}>
+    Average: {average.toFixed(1)}/10
+  </p>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-4">
+                  {Object.entries(
+                    analysis.analysisResults[category] as Record<string, number>
+                  ).map(([skill, score]) => (
+                    <div key={skill} className="w-40">
+                      <p className="text-sm mb-1">{skill}</p>
+                      <Progress value={(score / 10) * 100} className="w-full" />
+                      <p className="text-xs mt-1 text-center">{score}/10</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    ) : (
+      <p>No detailed breakdown available yet.</p>
+    )}
+  </CardContent>
+</Card>
+
+      </div>
     </div>
   );
 }
