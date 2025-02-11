@@ -38,7 +38,7 @@ export function RadialSkillChart({ analysisResults }: RadialSkillChartProps) {
   const radiusScale = 300; // how far out from center a "10" might push
 
   // Weighted center from -1..+1 => actual pixel offset
-  const circleRadius = 48; // circle size in px
+  const circleRadius = 56; // circle size in px
   const circleLeft = center + x * radiusScale - circleRadius / 2;
   const circleTop = center + y * radiusScale - circleRadius / 2;
 
@@ -57,7 +57,7 @@ export function RadialSkillChart({ analysisResults }: RadialSkillChartProps) {
     top: circleTop,
   }}
 >
-  {/* Optional label inside circle */}
+  <span className="text-black font-semibold">Current Level</span>
 </div>
     </div>
   );
