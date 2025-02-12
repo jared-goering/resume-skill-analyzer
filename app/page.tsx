@@ -1,10 +1,10 @@
-// app/page.tsx (or pages/index.tsx)
 "use client";
 
 import { useState } from "react";
 import ResumeFormCard, { Mode, QnAData } from "./components/ResumeFormCard";
 import SkillOverviewCard from "./components/SkillOverviewCard";
 import DetailedBreakdownCard from "./components/DetailedBreakdownCard";
+import FollowupQuestionsCard from "./components/FollowupQuestionsCard";
 
 export default function Home() {
   // Modes: "upload" or "questions"
@@ -140,8 +140,11 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
           error={error}
         />
 
-        {/* Column 2: Skills Overview (Radial Chart) */}
-        <SkillOverviewCard analysisResults={analysis.analysisResults} />
+        {/* Column 2: Skills Overview and Follow-up Questions */}
+        <div className="flex flex-col gap-6">
+          <SkillOverviewCard analysisResults={analysis.analysisResults} />
+          <FollowupQuestionsCard questions={analysis.followupQuestions || []} />
+        </div>
 
         {/* Column 3: Detailed Skill Breakdown */}
         <DetailedBreakdownCard analysisResults={analysis.analysisResults} />
