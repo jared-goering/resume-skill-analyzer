@@ -20,6 +20,9 @@ if (!admin.apps.length) {
 const bucket = admin.storage().bucket(process.env.FIREBASE_STORAGE_BUCKET || 'your-bucket-name.appspot.com');
 const db = admin.firestore();
 
+export const maxDuration = 30; // Allow function to run for 30 seconds
+
+
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
