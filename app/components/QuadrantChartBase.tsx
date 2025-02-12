@@ -8,7 +8,15 @@ import React from "react";
  */
 export function QuadrantChartBase(props: React.SVGProps<SVGSVGElement>) {
   return (
-<svg width="400" height="400" viewBox="0 0 830 830" fill="none" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
+    <svg
+    {...props}
+    viewBox="0 0 830 830"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlnsXlink="http://www.w3.org/1999/xlink"
+    preserveAspectRatio="xMidYMid meet"
+    className="w-full h-auto" // This makes the SVG responsive
+  >
 <path d="M0.102981 376.173C16.293 175.963 175.963 16.293 376.173 0.102981C394.253 -1.35702 409.753 12.893 409.753 31.033V378.723C409.753 395.863 395.863 409.753 378.723 409.753H31.033C12.893 409.753 -1.35702 394.253 0.102981 376.173Z" fill="#A4F5A6"/>
 <path d="M829.65 376.173C813.46 175.963 653.79 16.293 453.58 0.102981C435.5 -1.35702 420 12.893 420 31.033V378.723C420 395.863 433.89 409.753 451.03 409.753H798.72C816.86 409.753 831.11 394.253 829.65 376.173Z" fill="#B3A1FF"/>
 <path d="M0.102981 453.333C16.293 653.543 175.963 813.213 376.173 829.403C394.253 830.863 409.753 816.613 409.753 798.473V450.783C409.753 433.643 395.863 419.753 378.723 419.753H31.033C12.893 419.753 -1.35702 435.253 0.102981 453.333Z" fill="#F2A3B3"/>

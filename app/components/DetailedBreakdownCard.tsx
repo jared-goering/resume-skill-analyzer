@@ -1,4 +1,3 @@
-// components/DetailedBreakdownCard.tsx
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -10,19 +9,18 @@ const titleColorMap: Record<string, string> = {
   "Leadership Skills": "text-[#F8D57E]",
 };
 
+// Instead of generating the bg- class dynamically, we declare them explicitly.
+const categoryBgColorMap: Record<string, string> = {
+  "Professional Skills": "bg-[#A4F5A6]",
+  "Innovation Skills": "bg-[#B3A1FF]",
+  "Digital Skills": "bg-[#F2A3B3]",
+  "Leadership Skills": "bg-[#F8D57E]",
+};
+
 function getAverage(skills: Record<string, number>): number {
   const vals = Object.values(skills);
   if (!vals.length) return 0;
   return vals.reduce((a, b) => a + b, 0) / vals.length;
-}
-
-/**
- * Converts a text color class to a background color class.
- * For example, "text-[#A4F5A6]" becomes "bg-[#A4F5A6]".
- */
-function getCategoryBgColor(category: string): string {
-  const textColorClass = titleColorMap[category];
-  return textColorClass ? textColorClass.replace("text", "bg") : "bg-gray-300";
 }
 
 interface DetailedBreakdownCardProps {
@@ -44,10 +42,8 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
               return (
                 <Card key={category} className="mb-4">
                   <CardHeader>
-                    <CardTitle>
-                      {category}
-                    </CardTitle>
-                    <p >
+                    <CardTitle>{category}</CardTitle>
+                    <p>
                       Average: {average.toFixed(1)}/10
                     </p>
                   </CardHeader>
@@ -59,12 +55,11 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
                           {/* Custom progress bar */}
                           <div className="w-full h-2 rounded-full bg-gray-200">
                             <div
-                                className={`h-full rounded-full ${getCategoryBgColor(category)}`}
-                                style={{ width: `${(score / 10) * 100}%` }}
+                              className={`h-full rounded-full ${categoryBgColorMap[category] || "bg-gray-300"}`}
+                              style={{ width: `${(score / 10) * 100}%` }}
                             />
-                            </div>
-
-                            <p className="text-xs mt-1 text-center text-black">
+                          </div>
+                          <p className="text-xs mt-1 text-center text-black">
                             {score}/10
                           </p>
                         </div>
