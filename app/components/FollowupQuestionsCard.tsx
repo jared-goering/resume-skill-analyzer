@@ -4,19 +4,71 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 interface FollowupQuestionsCardProps {
   questions: string[];
+  email: string;
+  file?: File;
+  manualResume?: string;
+  originalAnalysis: string; // stringified original analysis
+  onUpdatedAnalysis?: (updatedAnalysis: any) => void;
 }
 
-export default function FollowupQuestionsCard({ questions }: FollowupQuestionsCardProps) {
+export default function FollowupQuestionsCard({
+  questions,
+  email,
+  file,
+  manualResume,
+  originalAnalysis,
+  onUpdatedAnalysis,
+}: FollowupQuestionsCardProps) {
   // Initialize an array of responses, one for each question.
   const [responses, setResponses] = useState<string[]>(questions.map(() => ""));
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (index: number, value: string) => {
     const newResponses = [...responses];
     newResponses[index] = value;
     setResponses(newResponses);
+  };
+
+  const handleFollowupSubmit = async () => {
+    setSubmitting(true);
+    setError("");
+
+    // Build form data for the followup submission.
+    const formData = new FormData();
+    formData.append("email", email);
+    if (file) {
+      formData.append("resume", file);
+    } else if (manualResume) {
+      formData.append("manualResume", manualResume);
+    }
+    formData.append("followupResponses", JSON.stringify(responses));
+    formData.append("originalAnalysis", originalAnalysis);
+    // Add the questions array as well.
+    formData.append("questions", JSON.stringify(questions));
+
+    try {
+      const res = await fetch("/api/followup", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        setError(errData.error || "Error processing follow-up analysis");
+      } else {
+        const data = await res.json();
+        if (onUpdatedAnalysis) {
+          onUpdatedAnalysis(data.updatedAnalysis);
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || "Error processing follow-up analysis");
+    }
+    setSubmitting(false);
   };
 
   return (
@@ -42,6 +94,10 @@ export default function FollowupQuestionsCard({ questions }: FollowupQuestionsCa
         ) : (
           <p>No follow-up questions available.</p>
         )}
+        <Button onClick={handleFollowupSubmit} disabled={submitting} className="mt-4">
+          {submitting ? "Submitting..." : "Submit to AI Analysis"}
+        </Button>
+        {error && <p className="text-red-500 mt-2">{error}</p>}
       </CardContent>
     </Card>
   );

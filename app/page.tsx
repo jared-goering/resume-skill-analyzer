@@ -32,6 +32,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [manualResumeText, setManualResumeText] = useState("");
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -62,10 +64,9 @@ export default function Home() {
     if (mode === "upload") {
       formData.append("resume", file!);
     } else {
-      // Combine the Q&A fields into a single text block
-      const manualResumeText = `
-Role in the Last 18 Months: ${qna.role}
-Main Responsibilities: ${qna.responsibilities}
+      const builtResume = `
+Role: ${qna.role}
+Responsibilities: ${qna.responsibilities}
 Key Skills Utilized: ${qna.keySkills}
 Key Projects/Initiatives: ${qna.projects}
 Significant Accomplishments: ${qna.accomplishments}
@@ -75,7 +76,8 @@ Communication and Teamwork Skills: ${qna.communicationTeamwork}
 Training or Certifications: ${qna.trainingCertifications}
 Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
       `;
-      formData.append("manualResume", manualResumeText);
+      setManualResumeText(builtResume);
+      formData.append("manualResume", builtResume);
     }
 
     try {
@@ -143,7 +145,17 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
         {/* Column 2: Skills Overview and Follow-up Questions */}
         <div className="flex flex-col gap-6">
           <SkillOverviewCard analysisResults={analysis.analysisResults} />
-          <FollowupQuestionsCard questions={analysis.followupQuestions || []} />
+          <FollowupQuestionsCard
+            questions={analysis.followupQuestions || []}
+            email={email}
+            file={file || undefined}
+            manualResume={manualResumeText}
+            originalAnalysis={JSON.stringify(analysis.analysisResults)}
+            onUpdatedAnalysis={(updatedAnalysis) => {
+              setAnalysis({ ...analysis, analysisResults: updatedAnalysis });
+            }}
+            
+          />
         </div>
 
         {/* Column 3: Detailed Skill Breakdown */}
