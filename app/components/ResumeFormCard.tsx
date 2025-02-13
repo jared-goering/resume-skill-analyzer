@@ -85,15 +85,21 @@ export default function ResumeFormCard({
           </div>
 
           {mode === "upload" ? (
-            <div>
-              <Label>Upload Resume (PDF or DOCX)</Label>
-              <Input
-                type="file"
-                accept=".pdf,.docx,.doc"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                required
-              />
-            </div>
+  <div>
+    <Label>Upload Resume (PDF or DOCX)</Label>
+    <Input
+      type="file"
+      accept=".pdf,.docx,.doc"
+      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+      required
+    />
+    {/* If we have a file in state, show its name below */}
+    {file && (
+      <p className="mt-2 text-sm text-gray-700">
+        Uploaded file: <span className="font-medium">{file.name}</span>
+      </p>
+    )}
+  </div>
           ) : (
             <>
               <div>
@@ -195,7 +201,7 @@ export default function ResumeFormCard({
             </>
           )}
 
-          <Button type="submit">Analyze Resume</Button>
+          <Button type="submit">✨ Analyze Resume</Button>
         </form>
 
         {loading && <p className="mt-4">Analyzing resume, please wait...</p>}

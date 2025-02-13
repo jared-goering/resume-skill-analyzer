@@ -5,6 +5,7 @@ import ResumeFormCard, { Mode, QnAData } from "./components/ResumeFormCard";
 import SkillOverviewCard from "./components/SkillOverviewCard";
 import DetailedBreakdownCard from "./components/DetailedBreakdownCard";
 import FollowupQuestionsCard from "./components/FollowupQuestionsCard";
+import Image from "next/image"; // optional, if you want to use Next.js Image component
 
 export default function Home() {
   // Modes: "upload" or "questions"
@@ -105,61 +106,76 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
   // If no analysis is available, show only the form centered on the page.
   if (!analysis) {
     return (
-      <div className="mx-auto flex justify-center py-8">
-        <ResumeFormCard
-          mode={mode}
-          setMode={setMode}
-          email={email}
-          setEmail={setEmail}
-          file={file}
-          setFile={setFile}
-          qna={qna}
-          setQna={setQna}
-          onSubmit={handleSubmit}
-          loading={loading}
-          error={error}
-        />
+      <div className="min-h-screen bg-[#EEEEEE] py-8">
+        {/* Header with Logo */}
+        <header className="flex items-center justify-center mb-8">
+          {/* Using Next.js Image component */}
+          <Image src="/skillsync logo full.png" alt="Logo" width={250} height={80} />
+          {/* Or using a simple <img> tag:
+          <img src="/logo.png" alt="Logo" className="h-16 w-auto" />
+          */}
+        </header>
+        <div className="mx-auto flex justify-center py-8">
+          <ResumeFormCard
+            mode={mode}
+            setMode={setMode}
+            email={email}
+            setEmail={setEmail}
+            file={file}
+            setFile={setFile}
+            qna={qna}
+            setQna={setQna}
+            onSubmit={handleSubmit}
+            loading={loading}
+            error={error}
+          />
+        </div>
       </div>
     );
   }
 
   // If analysis exists, show a three-column layout.
   return (
-    <div className="container mx-auto py-8">
-      <div className="grid grid-cols-3 gap-6 items-start">
-        {/* Column 1: The Resume Form */}
-        <ResumeFormCard
-          mode={mode}
-          setMode={setMode}
-          email={email}
-          setEmail={setEmail}
-          file={file}
-          setFile={setFile}
-          qna={qna}
-          setQna={setQna}
-          onSubmit={handleSubmit}
-          loading={loading}
-          error={error}
-        />
-
-        {/* Column 2: Skills Overview and Follow-up Questions */}
-        <div className="flex flex-col gap-6">
-          <SkillOverviewCard analysisResults={analysis.analysisResults} />
-          <FollowupQuestionsCard
-            questions={analysis.followupQuestions || []}
+    <div className="min-h-screen bg-[#EEEEEE] py-8">
+      {/* Header with Logo */}
+      <header className="flex items-center justify-center mb-4">
+        <Image src="/skillsync logo full.png" alt="Logo" width={200} height={80} />
+      </header>
+      <div className="container mx-auto py-8">
+        <div className="grid grid-cols-3 gap-6 items-start">
+          {/* Column 1: The Resume Form */}
+          <ResumeFormCard
+            mode={mode}
+            setMode={setMode}
             email={email}
-            file={file || undefined}
-            manualResume={manualResumeText}
-            originalAnalysis={JSON.stringify(analysis.analysisResults)}
-            onUpdatedAnalysis={(updatedAnalysis) => {
-              setAnalysis({ ...analysis, analysisResults: updatedAnalysis });
-            }}
-            
+            setEmail={setEmail}
+            file={file}
+            setFile={setFile}
+            qna={qna}
+            setQna={setQna}
+            onSubmit={handleSubmit}
+            loading={loading}
+            error={error}
           />
-        </div>
 
-        {/* Column 3: Detailed Skill Breakdown */}
-        <DetailedBreakdownCard analysisResults={analysis.analysisResults} />
+          {/* Column 2: Skills Overview and Follow-up Questions */}
+          <div className="flex flex-col gap-6">
+            <SkillOverviewCard analysisResults={analysis.analysisResults} />
+            <FollowupQuestionsCard
+              questions={analysis.followupQuestions || []}
+              email={email}
+              file={file || undefined}
+              manualResume={manualResumeText}
+              originalAnalysis={JSON.stringify(analysis.analysisResults)}
+              onUpdatedAnalysis={(updatedAnalysis) => {
+                setAnalysis({ ...analysis, analysisResults: updatedAnalysis });
+              }}
+            />
+          </div>
+
+          {/* Column 3: Detailed Skill Breakdown */}
+          <DetailedBreakdownCard analysisResults={analysis.analysisResults} />
+        </div>
       </div>
     </div>
   );

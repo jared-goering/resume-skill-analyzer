@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
@@ -75,6 +75,7 @@ export default function FollowupQuestionsCard({
     <Card className="mt-4">
       <CardHeader>
         <CardTitle>Follow-up Questions</CardTitle>
+        <CardDescription>Add additional information to fill out our picture of your skills</CardDescription>
       </CardHeader>
       <CardContent>
         {questions && questions.length > 0 ? (
@@ -95,7 +96,7 @@ export default function FollowupQuestionsCard({
           <p>No follow-up questions available.</p>
         )}
         <Button onClick={handleFollowupSubmit} disabled={submitting} className="mt-4">
-          {submitting ? "Submitting..." : "Submit to AI Analysis"}
+          {submitting ? "Submitting..." : "✨ Submit to AI Analysis"}
         </Button>
         {error && <p className="text-red-500 mt-2">{error}</p>}
       </CardContent>
