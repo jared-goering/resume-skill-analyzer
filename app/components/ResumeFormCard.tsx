@@ -5,6 +5,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import TimedProgressBar from "./TimedProgressBar"; // import the new component
+
 
 export type Mode = "upload" | "questions";
 
@@ -204,7 +206,9 @@ export default function ResumeFormCard({
           <Button type="submit">✨ Analyze Resume</Button>
         </form>
 
-        {loading && <p className="mt-4">Analyzing resume, please wait...</p>}
+        {loading && (
+       <TimedProgressBar loading={loading} />
+        )}        
         {error && <p className="mt-4 text-red-500">{error}</p>}
       </CardContent>
     </Card>

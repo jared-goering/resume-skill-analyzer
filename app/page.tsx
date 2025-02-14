@@ -5,6 +5,7 @@ import ResumeFormCard, { Mode, QnAData } from "./components/ResumeFormCard";
 import SkillOverviewCard from "./components/SkillOverviewCard";
 import DetailedBreakdownCard from "./components/DetailedBreakdownCard";
 import FollowupQuestionsCard from "./components/FollowupQuestionsCard";
+import ChatBotCard from "./components/ChatBotCard"
 import Image from "next/image"; // optional, if you want to use Next.js Image component
 
 export default function Home() {
@@ -142,8 +143,9 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
         <Image src="/skillsync logo full.png" alt="Logo" width={200} height={80} />
       </header>
       <div className="container mx-auto py-8">
-        <div className="grid grid-cols-3 gap-6 items-start">
-          {/* Column 1: The Resume Form */}
+      <div className="grid grid-cols-3 gap-6 items-start">
+  {/* Column 1: Resume Analyzer + Chatbot stacked */}
+        <div className="flex flex-col gap-6">
           <ResumeFormCard
             mode={mode}
             setMode={setMode}
@@ -157,6 +159,10 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
             loading={loading}
             error={error}
           />
+          <ChatBotCard email={email} 
+          analysisResults={JSON.stringify(analysis.analysisResults)}/>
+        </div>
+
 
           {/* Column 2: Skills Overview and Follow-up Questions */}
           <div className="flex flex-col gap-6">

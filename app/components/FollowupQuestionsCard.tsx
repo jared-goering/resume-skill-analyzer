@@ -1,10 +1,16 @@
-// components/FollowupQuestionsCard.tsx
 "use client";
 
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { CaretUp, CaretDown } from "@phosphor-icons/react";
 
 interface FollowupQuestionsCardProps {
   questions: string[];
@@ -23,10 +29,10 @@ export default function FollowupQuestionsCard({
   originalAnalysis,
   onUpdatedAnalysis,
 }: FollowupQuestionsCardProps) {
-  // Initialize an array of responses, one for each question.
   const [responses, setResponses] = useState<string[]>(questions.map(() => ""));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [collapsed, setCollapsed] = useState(false);
 
   const handleChange = (index: number, value: string) => {
     const newResponses = [...responses];
@@ -38,7 +44,6 @@ export default function FollowupQuestionsCard({
     setSubmitting(true);
     setError("");
 
-    // Build form data for the followup submission.
     const formData = new FormData();
     formData.append("email", email);
     if (file) {
@@ -48,7 +53,6 @@ export default function FollowupQuestionsCard({
     }
     formData.append("followupResponses", JSON.stringify(responses));
     formData.append("originalAnalysis", originalAnalysis);
-    // Add the questions array as well.
     formData.append("questions", JSON.stringify(questions));
 
     try {
@@ -72,34 +76,59 @@ export default function FollowupQuestionsCard({
   };
 
   return (
-    <Card className="mt-4">
-      <CardHeader>
-        <CardTitle>Follow-up Questions</CardTitle>
-        <CardDescription>Add additional information to fill out our picture of your skills</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {questions && questions.length > 0 ? (
-          <ul className="list-disc pl-5">
-            {questions.map((question, index) => (
-              <li key={index} className="mb-4">
-                <p className="mb-2">{question}</p>
-                <Textarea
-                  placeholder="Optional: Type your response here..."
-                  value={responses[index]}
-                  onChange={(e) => handleChange(index, e.target.value)}
-                  className="mt-1 w-full"
-                />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No follow-up questions available.</p>
-        )}
-        <Button onClick={handleFollowupSubmit} disabled={submitting} className="mt-4">
-          {submitting ? "Submitting..." : "✨ Submit to AI Analysis"}
+    <Card className="shadow-none border relative">
+      <CardHeader className="relative">
+        <div>
+          <CardTitle>Follow-up Questions</CardTitle>
+          <CardDescription>
+            Add additional information to fill out our picture of your skills.
+          </CardDescription>
+        </div>
+        {/* Minimize/Expand toggle button in the top-right corner */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-2 right-2"
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          {collapsed ? <CaretDown size={20} /> : <CaretUp size={20} />}
         </Button>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
-      </CardContent>
+      </CardHeader>
+
+      {/* Animated container for the card content */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ${
+          collapsed ? "max-h-0" : "max-h-[1000px]"
+        }`}
+      >
+        <CardContent>
+          {questions && questions.length > 0 ? (
+            <ul className="list-disc pl-5">
+              {questions.map((question, index) => (
+                <li key={index} className="mb-4">
+                  <p className="mb-2">{question}</p>
+                  <Textarea
+                    placeholder="Optional: Type your response here..."
+                    value={responses[index]}
+                    onChange={(e) => handleChange(index, e.target.value)}
+                    className="mt-1 w-full"
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No follow-up questions available.</p>
+          )}
+          <Button
+            onClick={handleFollowupSubmit}
+            disabled={submitting}
+            className="mt-4"
+          >
+            {submitting ? "Submitting..." : "✨ Submit to AI Analysis"}
+          </Button>
+          {error && <p className="text-red-500 mt-2">{error}</p>}
+        </CardContent>
+      </div>
     </Card>
   );
 }
