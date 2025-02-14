@@ -8,6 +8,8 @@ import FollowupQuestionsCard from "./components/FollowupQuestionsCard";
 import ChatBotCard from "./components/ChatBotCard"
 import Image from "next/image"; // optional, if you want to use Next.js Image component
 
+
+
 export default function Home() {
   // Modes: "upload" or "questions"
   const [mode, setMode] = useState<Mode>("upload");

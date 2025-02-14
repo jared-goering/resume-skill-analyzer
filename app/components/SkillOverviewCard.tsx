@@ -1,7 +1,7 @@
 // components/SkillOverviewCard.tsx
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { RadialSkillChart } from "./RadialSkillChart";
 
 type SkillCategories = {
@@ -20,6 +20,7 @@ export default function SkillOverviewCard({ analysisResults }: SkillOverviewCard
     <Card>
       <CardHeader>
         <CardTitle>Skills Overview</CardTitle>
+        <CardDescription>Track your skill synergy in each quadrant and discover where to focus your growth.</CardDescription>
       </CardHeader>
       <CardContent>
         {analysisResults ? (
