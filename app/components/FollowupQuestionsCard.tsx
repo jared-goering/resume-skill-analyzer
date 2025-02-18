@@ -76,7 +76,9 @@ export default function FollowupQuestionsCard({
   };
 
   return (
-    <Card className="shadow-none border relative">
+    <Card className="w-full max-w-xl rounded-md 
+    shadow-[0_6px_15px_rgba(0,0,0,0.05)] 
+    border-none ">
       <CardHeader className="relative">
         <div>
           <CardTitle>Follow-up Questions</CardTitle>

@@ -109,7 +109,7 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
   // If no analysis is available, show only the form centered on the page.
   if (!analysis) {
     return (
-      <div className="min-h-screen bg-[#EEEEEE] py-8">
+      <div className="min-h-screen bg-[#FFFFFF] py-8">
         {/* Header with Logo */}
         <header className="flex items-center justify-center mb-8">
           {/* Using Next.js Image component */}
@@ -139,7 +139,7 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
 
   // If analysis exists, show a three-column layout.
   return (
-    <div className="min-h-screen bg-[#EEEEEE] py-8">
+    <div className="min-h-screen py-8">
       {/* Header with Logo */}
       <header className="flex items-center justify-center mb-4">
         <Image src="/skillsync logo full.png" alt="Logo" width={200} height={80} />

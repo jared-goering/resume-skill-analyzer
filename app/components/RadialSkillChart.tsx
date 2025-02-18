@@ -29,7 +29,7 @@ export function RadialSkillChart({ analysisResults }: RadialSkillChartProps) {
   const containerSize = 400; // baseline size in pixels for our calculations
   const center = containerSize / 2;
   const radiusScale = 300; // how far a "10" might push out in pixels
-  const circleRadius = 56; // circle size in pixels
+  const circleRadius = 75; // circle size in pixels
   const { x, y } = getWeightedCenter(proAvg, innoAvg, digiAvg, leadAvg);
 
   // Calculate the circle's position in pixels (based on a 400px container).
@@ -47,17 +47,32 @@ export function RadialSkillChart({ analysisResults }: RadialSkillChartProps) {
       <QuadrantChartBase className="w-full h-full" />
 
       {/* "Current Level" circle positioned using percentages */}
-      <div
-        className="absolute flex items-center justify-center bg-white opacity-50 border border-gray-300 text-xs text-center rounded-full shadow"
-        style={{
-          width: `${circleDiameterPercent}%`,
-          height: `${circleDiameterPercent}%`,
-          left: `${circleLeftPercent}%`,
-          top: `${circleTopPercent}%`,
-        }}
-      >
-        <span className="text-black font-semibold">Current Level</span>
-      </div>
+     {/* "Current Level" multi-ring wrapper */}
+     <div
+  className="absolute"
+  style={{
+    width: `${circleDiameterPercent}%`,
+    height: `${circleDiameterPercent}%`,
+    left: `${circleLeftPercent}%`,
+    top: `${circleTopPercent}%`,
+  }}
+>
+  <div className="relative w-full h-full">
+    {/* Semi-transparent background */}
+    <div className="absolute inset-0 ounded-full z-0" />
+    
+    {/* Outer ring */}
+    <div className="absolute inset-0 rounded-full border border-[#F087FF] bg-white opacity-60 z-10" />
+
+    {/* Inner ring with centered text */}
+    <div className="absolute inset-1.5 rounded-full border border-[#F087FF] bg-white opacity-80 z-20 
+                flex items-center justify-center">
+  <span className="text-[#F087FF] font-semibold text-xs text-center whitespace-nowrap">
+    Current<br />Level
+  </span>
+</div>
+  </div>
+</div>
     </div>
   );
 }

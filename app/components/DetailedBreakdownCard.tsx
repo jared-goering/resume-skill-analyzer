@@ -30,13 +30,21 @@ const categoryDefinitions: Record<string, string> = {
     "Managing, inspiring, and guiding teams or organizations toward shared goals and positive cultures.",
 };
 
-/** Maps category to a background color for the progress bar. */
-const categoryBgColorMap: Record<string, string> = {
-  "Professional Skills": "bg-[#A4F5A6]",
-  "Innovation Skills": "bg-[#B3A1FF]",
-  "Digital Skills": "bg-[#F2A3B3]",
-  "Leadership Skills": "bg-[#F8D57E]",
-};
+// Map each category to a border color (original bright color)
+const categoryBorderColorMap: Record<string, string> = {
+    "Professional Skills": "#2AC5A9",
+    "Innovation Skills": "#4E22B9",
+    "Digital Skills": "#FF4B4B",
+    "Leadership Skills": "#FF6A00",
+  };
+  
+  // Map each category to its lighter interior fill color
+  const categoryFillColorMap: Record<string, string> = {
+    "Professional Skills": "#EAF9F6",
+    "Innovation Skills": "#EDE9F8",
+    "Digital Skills": "#FFEDED",
+    "Leadership Skills": "#FFF0E5",
+  };
 
 function getAverage(skills: Record<string, number>): number {
   const vals = Object.values(skills);
@@ -54,7 +62,9 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
 
   if (!analysisResults) {
     return (
-      <Card className="shadow-none">
+        <Card className="w-full max-w-xl rounded-md 
+        shadow-[0_6px_15px_rgba(0,0,0,0.05)] 
+        border-none">
         <CardHeader>
           <CardTitle>Detailed Skill Breakdown</CardTitle>
           <CardDescription>Your skill profile, organized into four essential domains.</CardDescription>
@@ -67,11 +77,14 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
   }
 
   return (
-    <Card className="shadow-none">
+    <Card className="w-full max-w-xl rounded-md 
+    shadow-[0_6px_15px_rgba(0,0,0,0.05)] 
+    border-none ">
       <CardHeader className="relative">
         <CardTitle>Detailed Skill Breakdown</CardTitle>
-        <CardDescription>Your skill profile, organized into four essential domains.</CardDescription>
-        {/* Collapse toggle in top-right */}
+        <CardDescription>
+          Your skill profile, organized into four essential domains.
+        </CardDescription>
         <Button
           variant="ghost"
           size="sm"
@@ -87,12 +100,14 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
             const skills = analysisResults[category];
             const average = getAverage(skills);
             const categoryDefinition = categoryDefinitions[category] || "No definition available.";
+            const borderColor = categoryBorderColorMap[category] || "#000";
+            const fillColor = categoryFillColorMap[category] || "#eee";
+
             return (
-              <Card key={category} className="mb-4 shadow-none border w-full">
+              <Card key={category} className="mb-4 rounded-md shadow-none border w-full">
                 <CardHeader>
-                  {/* Title row with tooltip icon */}
                   <div className="flex items-center gap-2">
-                    <CardTitle className="whitespace-nowrap">{category}</CardTitle>
+                    <CardTitle>{category}</CardTitle>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
@@ -105,61 +120,82 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
                     </TooltipProvider>
                   </div>
                   <p>Average: {average.toFixed(1)}/10</p>
-                  {/* In collapsed view, show a progress bar representing the average */}
+
                   {collapsed && (
-                    <div className="mt-2 w-full h-2 rounded-full bg-gray-200">
+                    <div className="relative mt-2 w-full h-2 rounded-full bg-gray-200">
+                      {/* This inner div gets the border & dynamic width */}
                       <div
-                        className={`h-full rounded-full ${categoryBgColorMap[category]}`}
-                        style={{ width: `${(average / 10) * 100}%` }}
-                      />
+                        className="absolute top-0 left-0 h-2 rounded-full overflow-hidden"
+                        style={{
+                          width: `${(average / 10) * 100}%`,
+                          border: `1px solid ${borderColor}`,
+                        }}
+                      >
+                        <div
+                          className="h-full w-full"
+                          style={{
+                            backgroundColor: fillColor,
+                          }}
+                        />
+                      </div>
                     </div>
                   )}
                 </CardHeader>
-                {/* Wrap detailed content in an animated container */}
                 <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
                     collapsed ? "max-h-0" : "max-h-[1000px]"
                   }`}
                 >
                   {!collapsed && (
                     <CardContent>
                       <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
-                      {Object.entries(skills).map(([skill, score]) => {
-                      const skillDefinition = skillDefinitions[skill] || "No definition available.";
-                      return (
-                        <Card key={skill} className="shadow-none border w-full">
-                          <CardContent className="p-2 relative">
-                            {/* Skill title with tooltip */}
-                            <div className="min-h-[2.5rem] whitespace-normal break-words pr-4">
-                              <p className="text-sm mb-1">{skill}</p>
-                            </div>
+                        {Object.entries(skills).map(([skill, score]) => {
+                          const skillDefinition = skillDefinitions[skill] || "No definition available.";
 
-                            <div className="absolute top-1 right-1">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Info size={16} className="cursor-pointer" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="text-xs">{skillDefinition}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                              </TooltipProvider>
-                            </div>
+                          return (
+                            <Card
+                              key={skill}
+                              className="shadow-none border w-full rounded-md"
+                            >
+                              <CardContent className="p-2 relative">
+                                <div className="min-h-[2.5rem] pr-4">
+                                  <p className="text-sm mb-1">{skill}</p>
+                                </div>
+                                <div className="absolute top-1 right-1">
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <Info size={16} className="cursor-pointer" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="text-xs">{skillDefinition}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
 
-                            {/* Progress bar */}
-                            <div className="w-full h-2 rounded-full bg-gray-200">
-                              <div
-                                className={`h-full rounded-full ${
-                                  categoryBgColorMap[category] || "bg-gray-300"
-                                }`}
-                                style={{ width: `${(score / 10) * 100}%` }}
-                              />
-                            </div>
-                            <p className="text-xs mt-1 text-center text-black">{score}/10</p>
-                          </CardContent>
-                        </Card>
-                  
+                                {/* Same border/fill logic at the skill level */}
+                                <div className="relative w-full h-2 rounded-full bg-gray-200">
+                                  <div
+                                    className="absolute top-0 left-0 h-2 rounded-full overflow-hidden"
+                                    style={{
+                                      width: `${(score / 10) * 100}%`,
+                                      border: `1px solid ${borderColor}`,
+                                    }}
+                                  >
+                                    <div
+                                      className="h-full w-full"
+                                      style={{
+                                        backgroundColor: fillColor,
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                                <p className="text-xs mt-1 text-center text-black">
+                                  {score}/10
+                                </p>
+                              </CardContent>
+                            </Card>
                           );
                         })}
                       </div>

@@ -5,8 +5,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import TimedProgressBar from "./TimedProgressBar"; // import the new component
-
+import TimedProgressBar from "./TimedProgressBar";
+import MyDropzone from "./MyDropzone"; 
 
 export type Mode = "upload" | "questions";
 
@@ -51,14 +51,17 @@ export default function ResumeFormCard({
   error,
 }: ResumeFormCardProps) {
   return (
-    <Card className="w-full max-w-xl">
-      <CardHeader>
-        <CardTitle>Resume Skill Analyzer</CardTitle>
-        <CardDescription>Analyze your resume using AI</CardDescription>
+    <Card className="w-full max-w-xl rounded-md 
+                     shadow-[0_6px_15px_rgba(0,0,0,0.05)] 
+                     border-none ">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xl">Resume Skill Analyzer</CardTitle>
+        <CardDescription className="text-gray-600">Analyze your resume using AI</CardDescription>
       </CardHeader>
-      <CardContent>
-        {/* Mode toggle */}
-        <div className="flex gap-4 mb-4">
+
+      <CardContent className="pt-2">
+        {/* Mode toggle buttons */}
+        <div className="flex gap-4 mb-6">
           <Button
             type="button"
             variant={mode === "upload" ? "default" : "outline"}
@@ -76,9 +79,13 @@ export default function ResumeFormCard({
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
+          {/* Email Field */}
           <div>
-            <Label>Email</Label>
+            <Label htmlFor="email" className="mb-2 block text-sm font-medium">
+              Email
+            </Label>
             <Input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -86,26 +93,25 @@ export default function ResumeFormCard({
             />
           </div>
 
+          {/* Upload Mode */}
           {mode === "upload" ? (
-  <div>
-    <Label>Upload Resume (PDF or DOCX)</Label>
-    <Input
-      type="file"
-      accept=".pdf,.docx,.doc"
-      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-      required
-    />
-    {/* If we have a file in state, show its name below */}
-    {file && (
-      <p className="mt-2 text-sm text-gray-700">
-        Uploaded file: <span className="font-medium">{file.name}</span>
-      </p>
-    )}
-  </div>
+            <div>
+              <Label className="mb-2 block text-sm font-medium">
+                Upload Resume (PDF or DOCX)
+              </Label>
+              <MyDropzone file={file} setFile={setFile} />              {file && (
+                <p className="mt-2 text-sm text-gray-700">
+                  {/* Uploaded file: <span className="font-medium">{file.name}</span> */}
+                </p>
+              )}
+            </div>
           ) : (
+            // Questions Mode
             <>
               <div>
-                <Label>Role in the Last 18 Months</Label>
+                <Label className="mb-2 block text-sm font-medium">
+                  Role in the Last 18 Months
+                </Label>
                 <Input
                   type="text"
                   value={qna.role}
@@ -114,7 +120,9 @@ export default function ResumeFormCard({
                 />
               </div>
               <div>
-                <Label>Main Responsibilities</Label>
+                <Label className="mb-2 block text-sm font-medium">
+                  Main Responsibilities
+                </Label>
                 <Input
                   type="text"
                   value={qna.responsibilities}
@@ -123,7 +131,9 @@ export default function ResumeFormCard({
                 />
               </div>
               <div>
-                <Label>Key Skills Utilized</Label>
+                <Label className="mb-2 block text-sm font-medium">
+                  Key Skills Utilized
+                </Label>
                 <Input
                   type="text"
                   value={qna.keySkills}
@@ -132,7 +142,9 @@ export default function ResumeFormCard({
                 />
               </div>
               <div>
-                <Label>Key Projects/Initiatives</Label>
+                <Label className="mb-2 block text-sm font-medium">
+                  Key Projects/Initiatives
+                </Label>
                 <Input
                   type="text"
                   value={qna.projects}
@@ -141,7 +153,9 @@ export default function ResumeFormCard({
                 />
               </div>
               <div>
-                <Label>Significant Accomplishments</Label>
+                <Label className="mb-2 block text-sm font-medium">
+                  Significant Accomplishments
+                </Label>
                 <Input
                   type="text"
                   value={qna.accomplishments}
@@ -150,7 +164,9 @@ export default function ResumeFormCard({
                 />
               </div>
               <div>
-                <Label>Technical Tools/Platforms Worked With</Label>
+                <Label className="mb-2 block text-sm font-medium">
+                  Technical Tools/Platforms Worked With
+                </Label>
                 <Input
                   type="text"
                   value={qna.technicalTools}
@@ -159,7 +175,9 @@ export default function ResumeFormCard({
                 />
               </div>
               <div>
-                <Label>Tools You Are Most Proficient In</Label>
+                <Label className="mb-2 block text-sm font-medium">
+                  Tools You Are Most Proficient In
+                </Label>
                 <Input
                   type="text"
                   value={qna.proficientTools}
@@ -168,48 +186,67 @@ export default function ResumeFormCard({
                 />
               </div>
               <div>
-                <Label>Communication and Teamwork Skills</Label>
+                <Label className="mb-2 block text-sm font-medium">
+                  Communication and Teamwork Skills
+                </Label>
                 <Input
                   type="text"
                   value={qna.communicationTeamwork}
-                  onChange={(e) =>
-                    setQna({ ...qna, communicationTeamwork: e.target.value })
-                  }
+                  onChange={(e) => setQna({ ...qna, communicationTeamwork: e.target.value })}
                   required
                 />
               </div>
               <div>
-                <Label>Recent Training or Certifications</Label>
+                <Label className="mb-2 block text-sm font-medium">
+                  Recent Training or Certifications
+                </Label>
                 <Input
                   type="text"
                   value={qna.trainingCertifications}
-                  onChange={(e) =>
-                    setQna({ ...qna, trainingCertifications: e.target.value })
-                  }
+                  onChange={(e) => setQna({ ...qna, trainingCertifications: e.target.value })}
                   required
                 />
               </div>
               <div>
-                <Label>Strongest Skills & Improvement Opportunities</Label>
+                <Label className="mb-2 block text-sm font-medium">
+                  Strongest Skills &amp; Improvement Opportunities
+                </Label>
                 <Input
                   type="text"
                   value={qna.strengthsOpportunities}
-                  onChange={(e) =>
-                    setQna({ ...qna, strengthsOpportunities: e.target.value })
-                  }
+                  onChange={(e) => setQna({ ...qna, strengthsOpportunities: e.target.value })}
                   required
                 />
               </div>
             </>
           )}
 
-          <Button type="submit">✨ Analyze Resume</Button>
+          {/* Submit Button */}
+          <Button
+  type="submit"
+  className="relative mt-4 overflow-hidden font-medium 
+              text-white py-2 px-4 rounded group hover:text-yellow-400"
+>
+  {/* The shimmer layer */}
+  <span
+    className="absolute inset-0 
+               bg-[linear-gradient(to_right,rgba(255,255,255,0)_0%,rgba(255,255,255,0.4)_20%,rgba(255,255,255,0)_40%)]
+               bg-[length:200%_100%]
+               opacity-0
+               group-hover:opacity-50
+               group-hover:animate-[shimmer_1.5s_infinite_linear]"
+  />
+
+  {/* The visible text on top */}
+  <span className="relative z-10">
+    ✨ Analyze Resume
+  </span>
+</Button>
         </form>
 
-        {loading && (
-       <TimedProgressBar loading={loading} />
-        )}        
-        {error && <p className="mt-4 text-red-500">{error}</p>}
+        {/* Progress bar + Error messaging */}
+        {loading && <TimedProgressBar loading={loading} />}
+        {error && <p className="mt-4 text-red-500 text-sm">{error}</p>}
       </CardContent>
     </Card>
   );
