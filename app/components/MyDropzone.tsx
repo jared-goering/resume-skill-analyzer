@@ -31,7 +31,7 @@ export default function MyDropzone({ file, setFile }: MyDropzoneProps) {
       {...getRootProps()}
       className={`border-2 border-dashed border-[#0095E8] rounded-md 
                   bg-[#E5F4FD] text-center cursor-pointer transition-colors 
-                  hover:bg-[#CFECFE] flex flex-col items-center 
+                  hover:bg-[#CFECFE] flex flex-col items-center dark:bg-[#2B374B] dark:border-[#0095E8]
                   ${dropzonePadding}`}
     >
       <input {...getInputProps()} />

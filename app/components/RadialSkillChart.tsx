@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { QuadrantChartBase } from "./QuadrantChartBase"; // your inline Figma SVG
+import { QuadrantChartBase } from "./QuadrantChartBase"; // light mode SVG
+import { DarkQuadrantChart } from "./DarkQuadrantChart"; // dark mode SVG
 
 type SkillCategories = {
   "Professional Skills": Record<string, number>;
@@ -12,13 +13,14 @@ type SkillCategories = {
 
 interface RadialSkillChartProps {
   analysisResults: SkillCategories;
+  darkMode: boolean; // New prop
 }
 
 /**
- * Displays a quadrant chart plus a single "current level" circle whose position
- * is weighted by each quadrant's average skill. The container and positions scale responsively.
+ * Displays a quadrant chart plus a "current level" circle whose position
+ * is weighted by each quadrant's average skill.
  */
-export function RadialSkillChart({ analysisResults }: RadialSkillChartProps) {
+export function RadialSkillChart({ analysisResults, darkMode }: RadialSkillChartProps) {
   // 1) Compute the average skill (1..10) for each quadrant.
   const proAvg = getAverage(analysisResults["Professional Skills"]);
   const innoAvg = getAverage(analysisResults["Innovation Skills"]);
@@ -26,53 +28,65 @@ export function RadialSkillChart({ analysisResults }: RadialSkillChartProps) {
   const leadAvg = getAverage(analysisResults["Leadership Skills"]);
 
   // 2) Compute the weighted center using a baseline container size of 400px.
-  const containerSize = 400; // baseline size in pixels for our calculations
+  const containerSize = 400;
   const center = containerSize / 2;
-  const radiusScale = 300; // how far a "10" might push out in pixels
-  const circleRadius = 75; // circle size in pixels
+  const radiusScale = 300;
+  const circleRadius = 75;
   const { x, y } = getWeightedCenter(proAvg, innoAvg, digiAvg, leadAvg);
 
-  // Calculate the circle's position in pixels (based on a 400px container).
   const circleLeftPx = center + x * radiusScale - circleRadius / 2;
   const circleTopPx = center + y * radiusScale - circleRadius / 2;
 
-  // 3) Convert pixel values to percentages relative to the baseline container size.
+  // 3) Convert pixel values to percentages.
   const circleLeftPercent = (circleLeftPx / containerSize) * 100;
   const circleTopPercent = (circleTopPx / containerSize) * 100;
   const circleDiameterPercent = (circleRadius / containerSize) * 100;
 
   return (
-    // The container is fluid: full width, with a max-width of 400px and a square aspect ratio.
     <div className="relative w-full max-w-[400px] aspect-square mx-auto">
-      <QuadrantChartBase className="w-full h-full" />
+      {/* Conditionally render the appropriate SVG based on darkMode */}
+      {darkMode ? (
+        <DarkQuadrantChart className="w-full h-full" />
+      ) : (
+        <QuadrantChartBase className="w-full h-full" />
+      )}
 
-      {/* "Current Level" circle positioned using percentages */}
-     {/* "Current Level" multi-ring wrapper */}
-     <div
-  className="absolute"
-  style={{
-    width: `${circleDiameterPercent}%`,
-    height: `${circleDiameterPercent}%`,
-    left: `${circleLeftPercent}%`,
-    top: `${circleTopPercent}%`,
-  }}
->
-  <div className="relative w-full h-full">
-    {/* Semi-transparent background */}
-    <div className="absolute inset-0 ounded-full z-0" />
-    
-    {/* Outer ring */}
-    <div className="absolute inset-0 rounded-full border border-[#F087FF] bg-white opacity-60 z-10" />
-
-    {/* Inner ring with centered text */}
-    <div className="absolute inset-1.5 rounded-full border border-[#F087FF] bg-white opacity-80 z-20 
-                flex items-center justify-center">
-  <span className="text-[#F087FF] font-semibold text-xs text-center whitespace-nowrap">
-    Current<br />Level
-  </span>
-</div>
-  </div>
-</div>
+      {/* "Current Level" circle */}
+      <div
+        className="absolute"
+        style={{
+          width: `${circleDiameterPercent}%`,
+          height: `${circleDiameterPercent}%`,
+          left: `${circleLeftPercent}%`,
+          top: `${circleTopPercent}%`,
+        }}
+      >
+        <div className="relative w-full h-full">
+          {darkMode ? (
+            <>
+              {/* Outer ring for dark mode */}
+              <div className="absolute inset-0 rounded-full border border-[#F087FF] bg-[#2D2D2D] opacity-60 z-10 drop-shadow-md" />
+              {/* Inner ring with text for dark mode */}
+              <div className="absolute inset-1.5 rounded-full border border-[#F087FF] bg-[#2D2D2D] opacity-80 z-20 flex items-center justify-center">
+                <span className="text-white font-semibold text-xs text-center whitespace-nowrap">
+                  Current<br />Level
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Outer ring for light mode */}
+              <div className="absolute inset-0 rounded-full border border-[#F087FF] bg-white opacity-60 z-10 drop-shadow-md" />
+              {/* Inner ring with text for light mode */}
+              <div className="absolute inset-1.5 rounded-full border border-[#F087FF] bg-white opacity-80 z-20 flex items-center justify-center">
+                <span className="text-[#F087FF] font-semibold text-xs text-center whitespace-nowrap">
+                  Current<br />Level
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -82,18 +96,11 @@ export function RadialSkillChart({ analysisResults }: RadialSkillChartProps) {
  */
 function getAverage(skills: Record<string, number>): number {
   const vals = Object.values(skills);
-  if (!vals.length) return 0;
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
+  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
 }
 
 /**
  * Computes the weighted center using each quadrant's average skill.
- *
- * The quadrant vectors used are:
- *   Professional Skills: (-1, -1) top-left
- *   Innovation Skills:   (+1, -1) top-right
- *   Digital Skills:      (-1, +1) bottom-left
- *   Leadership Skills:   (+1, +1) bottom-right
  */
 function getWeightedCenter(pro: number, inno: number, digi: number, lead: number) {
   const exponent = 2;

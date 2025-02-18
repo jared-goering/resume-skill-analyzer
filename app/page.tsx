@@ -1,24 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ResumeFormCard, { Mode, QnAData } from "./components/ResumeFormCard";
 import SkillOverviewCard from "./components/SkillOverviewCard";
 import DetailedBreakdownCard from "./components/DetailedBreakdownCard";
 import FollowupQuestionsCard from "./components/FollowupQuestionsCard";
-import ChatBotCard from "./components/ChatBotCard"
-import Image from "next/image"; // optional, if you want to use Next.js Image component
-
-
+import ChatBotCard from "./components/ChatBotCard";
+import Image from "next/image";
 
 export default function Home() {
-  // Modes: "upload" or "questions"
+  const [darkMode, setDarkMode] = useState(false);  // <-- NEW: store dark mode state
   const [mode, setMode] = useState<Mode>("upload");
-
-  // Basic form state
   const [email, setEmail] = useState("");
   const [file, setFile] = useState<File | null>(null);
-
-  // Grouped Q&A state
   const [qna, setQna] = useState<QnAData>({
     role: "",
     responsibilities: "",
@@ -31,17 +25,23 @@ export default function Home() {
     trainingCertifications: "",
     strengthsOpportunities: "",
   });
-
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const [manualResumeText, setManualResumeText] = useState("");
+
+  // Whenever darkMode changes, add/remove the "dark" class from <html>
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Basic validation
+    // Basic validation...
     if (!email) {
       setError("Please provide your email.");
       return;
@@ -106,17 +106,20 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
     setLoading(false);
   };
 
-  // If no analysis is available, show only the form centered on the page.
+  // If no analysis is available, just show the form
   if (!analysis) {
     return (
-      <div className="min-h-screen bg-[#FFFFFF] py-8">
-        {/* Header with Logo */}
-        <header className="flex items-center justify-center mb-8">
-          {/* Using Next.js Image component */}
+      <div className="min-h-screen bg-white dark:bg-[#302D39] py-8">
+        <header className="flex items-center justify-between mb-8 px-4">
+          {/* Logo */}
           <Image src="/skillsync logo full.png" alt="Logo" width={250} height={80} />
-          {/* Or using a simple <img> tag:
-          <img src="/logo.png" alt="Logo" className="h-16 w-auto" />
-          */}
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={() => setDarkMode((prev) => !prev)}
+            className="bg-gray-200 dark:bg-gray-700 text-sm py-2 px-4 rounded-md"
+          >
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </button>
         </header>
         <div className="mx-auto flex justify-center py-8">
           <ResumeFormCard
@@ -137,39 +140,46 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
     );
   }
 
-  // If analysis exists, show a three-column layout.
+  // If analysis is ready, show the 3-column layout
   return (
-    <div className="min-h-screen py-8">
-      {/* Header with Logo */}
-      <header className="flex items-center justify-center mb-4">
+    <div className="min-h-screen bg-white dark:bg-[#302D39] py-8">
+      <header className="flex items-center justify-between mb-4 px-4">
         <Image src="/skillsync logo full.png" alt="Logo" width={200} height={80} />
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={() => setDarkMode((prev) => !prev)}
+          className="bg-gray-200 dark:bg-gray-700 text-sm py-2 px-4 rounded-md"
+        >
+          {darkMode ? "Light Mode" : "Dark Mode"}
+        </button>
       </header>
       <div className="container mx-auto py-8">
-      <div className="grid grid-cols-3 gap-6 items-start">
-  {/* Column 1: Resume Analyzer + Chatbot stacked */}
-        <div className="flex flex-col gap-6">
-          <ResumeFormCard
-            mode={mode}
-            setMode={setMode}
-            email={email}
-            setEmail={setEmail}
-            file={file}
-            setFile={setFile}
-            qna={qna}
-            setQna={setQna}
-            onSubmit={handleSubmit}
-            loading={loading}
-            error={error}
-          />
-          <ChatBotCard email={email} 
-          analysisResults={JSON.stringify(analysis.analysisResults)}/>
-        </div>
-
-
-          {/* Column 2: Skills Overview and Follow-up Questions */}
+        <div className="grid grid-cols-3 gap-6 items-start">
+          {/* Column 1: Resume Analyzer + Chatbot stacked */}
           <div className="flex flex-col gap-6">
-            <SkillOverviewCard analysisResults={analysis.analysisResults} />
-            <FollowupQuestionsCard
+            <ResumeFormCard
+              mode={mode}
+              setMode={setMode}
+              email={email}
+              setEmail={setEmail}
+              file={file}
+              setFile={setFile}
+              qna={qna}
+              setQna={setQna}
+              onSubmit={handleSubmit}
+              loading={loading}
+              error={error}
+            />
+            <ChatBotCard
+              email={email}
+              analysisResults={JSON.stringify(analysis.analysisResults)}
+            />
+          </div>
+
+          {/* Column 2: Skills Overview + Follow-up */}
+          <div className="flex flex-col gap-6">
+          <SkillOverviewCard analysisResults={analysis.analysisResults} darkMode={darkMode} />  
+           <FollowupQuestionsCard
               questions={analysis.followupQuestions || []}
               email={email}
               file={file || undefined}
@@ -181,8 +191,8 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
             />
           </div>
 
-          {/* Column 3: Detailed Skill Breakdown */}
-          <DetailedBreakdownCard analysisResults={analysis.analysisResults} />
+          {/* Column 3: Detailed Breakdown */}
+          <DetailedBreakdownCard analysisResults={analysis.analysisResults} darkMode={darkMode} />
         </div>
       </div>
     </div>

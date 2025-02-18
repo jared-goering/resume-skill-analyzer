@@ -49,7 +49,19 @@ export default {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-  			}
+  			},
+			  brandDark: {
+				100: "#403C4A", // your “card” background
+				200: "#1F212E", // your “sidebar” background
+				300: "#191B28", // your outermost container background
+			  },
+			  brandGray: {
+				100: "#2D2F3B", // slightly lighter gray for panels
+				200: "#BEBDBD", // text or border lines, etc.
+			  },
+			  brandBlue: {
+				DEFAULT: "#2AC5A9", // accent color for buttons/links
+			  },
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

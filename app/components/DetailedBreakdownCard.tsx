@@ -32,18 +32,26 @@ const categoryDefinitions: Record<string, string> = {
 
 // Map each category to a border color (original bright color)
 const categoryBorderColorMap: Record<string, string> = {
-    "Professional Skills": "#2AC5A9",
-    "Innovation Skills": "#4E22B9",
-    "Digital Skills": "#FF4B4B",
-    "Leadership Skills": "#FF6A00",
-  };
-  
-  // Map each category to its lighter interior fill color
-  const categoryFillColorMap: Record<string, string> = {
-    "Professional Skills": "#EAF9F6",
-    "Innovation Skills": "#EDE9F8",
-    "Digital Skills": "#FFEDED",
-    "Leadership Skills": "#FFF0E5",
+  "Professional Skills": "#2AC5A9",
+  "Innovation Skills": "#7339FF",
+  "Digital Skills": "#FF4B4B",
+  "Leadership Skills": "#FF6A00",
+};
+
+// Map each category to its lighter interior fill color for light mode
+const categoryFillColorMap: Record<string, string> = {
+  "Professional Skills": "#EAF9F6",
+  "Innovation Skills": "#EDE9F8",
+  "Digital Skills": "#FFEDED",
+  "Leadership Skills": "#FFF0E5",
+};
+
+// Map each category to a fill color for dark mode (you can choose different values)
+const categoryDarkFillColorMap: Record<string, string> = {
+    "Professional Skills": "#2AC5A980", // 50% opacity
+    "Innovation Skills": "#4E22B980",
+    "Digital Skills": "#FF4B4B80",
+    "Leadership Skills": "#FF6A0080",
   };
 
 function getAverage(skills: Record<string, number>): number {
@@ -54,20 +62,35 @@ function getAverage(skills: Record<string, number>): number {
 
 interface DetailedBreakdownCardProps {
   analysisResults: Record<string, Record<string, number>> | null;
+  darkMode: boolean;
 }
 
-export default function DetailedBreakdownCard({ analysisResults }: DetailedBreakdownCardProps) {
+export default function DetailedBreakdownCard({ analysisResults, darkMode }: DetailedBreakdownCardProps) {
   // Global collapsed state for the entire card
   const [collapsed, setCollapsed] = useState(false);
 
+  // Shared style for the top-level card (same approach as ResumeFormCard/SkillOverviewCard)
+  const topLevelCardStyles = `
+    w-full max-w-xl 
+    rounded-md 
+    shadow-[0_6px_15px_rgba(0,0,0,0.05)] 
+    border border-gray-200 
+    bg-white 
+    text-black 
+    dark:border-none 
+    dark:bg-gradient-to-b dark:from-[#433F4D] dark:to-[#302D39]
+    dark:text-gray-100
+  `;
+
+  // If there's no analysis, show a placeholder card.
   if (!analysisResults) {
     return (
-        <Card className="w-full max-w-xl rounded-md 
-        shadow-[0_6px_15px_rgba(0,0,0,0.05)] 
-        border-none">
+      <Card className={topLevelCardStyles}>
         <CardHeader>
           <CardTitle>Detailed Skill Breakdown</CardTitle>
-          <CardDescription>Your skill profile, organized into four essential domains.</CardDescription>
+          <CardDescription>
+            Your skill profile, organized into four essential domains.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <p>No detailed breakdown available yet.</p>
@@ -77,9 +100,7 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
   }
 
   return (
-    <Card className="w-full max-w-xl rounded-md 
-    shadow-[0_6px_15px_rgba(0,0,0,0.05)] 
-    border-none ">
+    <Card className={topLevelCardStyles}>
       <CardHeader className="relative">
         <CardTitle>Detailed Skill Breakdown</CardTitle>
         <CardDescription>
@@ -94,6 +115,7 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
           {collapsed ? <CaretDown size={20} /> : <CaretUp size={20} />}
         </Button>
       </CardHeader>
+
       <CardContent>
         <div className="space-y-4">
           {Object.keys(analysisResults).map((category) => {
@@ -101,10 +123,27 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
             const average = getAverage(skills);
             const categoryDefinition = categoryDefinitions[category] || "No definition available.";
             const borderColor = categoryBorderColorMap[category] || "#000";
-            const fillColor = categoryFillColorMap[category] || "#eee";
+            // Choose fill color based on darkMode state
+            const fillColor = darkMode
+              ? categoryDarkFillColorMap[category] || "#444"
+              : categoryFillColorMap[category] || "#eee";
 
             return (
-              <Card key={category} className="mb-4 rounded-md shadow-none border w-full">
+              // Category-Level Card
+              <Card
+                key={category}
+                className="
+                  mb-4 
+                  rounded-md 
+                  shadow-none 
+                  border 
+                  border-gray-200 
+                  dark:border-gray-600 
+                  bg-transparent
+                  text-inherit
+                  w-full
+                "
+              >
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <CardTitle>{category}</CardTitle>
@@ -122,8 +161,8 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
                   <p>Average: {average.toFixed(1)}/10</p>
 
                   {collapsed && (
-                    <div className="relative mt-2 w-full h-2 rounded-full bg-gray-200">
-                      {/* This inner div gets the border & dynamic width */}
+                    <div className="relative mt-2 w-full h-2 rounded-full bg-gray-200 dark:bg-gray-700">
+                      {/* Inner progress bar with dynamic width & category border */}
                       <div
                         className="absolute top-0 left-0 h-2 rounded-full overflow-hidden"
                         style={{
@@ -141,6 +180,7 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
                     </div>
                   )}
                 </CardHeader>
+
                 <div
                   className={`overflow-hidden transition-all duration-300 ease-in-out ${
                     collapsed ? "max-h-0" : "max-h-[1000px]"
@@ -150,12 +190,25 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
                     <CardContent>
                       <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
                         {Object.entries(skills).map(([skill, score]) => {
-                          const skillDefinition = skillDefinitions[skill] || "No definition available.";
+                          const skillDefinition =
+                            skillDefinitions[skill] || "No definition available.";
 
                           return (
+                            // Individual Skill Card
                             <Card
                               key={skill}
-                              className="shadow-none border w-full rounded-md"
+                              className="
+                                shadow-none 
+                                border 
+                                border-gray-200 
+                                dark:border-gray-600 
+                                bg-white 
+                                dark:bg-[#3B3744]
+                                text-black 
+                                dark:text-gray-100
+                                rounded-md 
+                                w-full
+                              "
                             >
                               <CardContent className="p-2 relative">
                                 <div className="min-h-[2.5rem] pr-4">
@@ -174,8 +227,8 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
                                   </TooltipProvider>
                                 </div>
 
-                                {/* Same border/fill logic at the skill level */}
-                                <div className="relative w-full h-2 rounded-full bg-gray-200">
+                                {/* Skill progress bar */}
+                                <div className="relative w-full h-2 rounded-full bg-gray-200 dark:bg-gray-700">
                                   <div
                                     className="absolute top-0 left-0 h-2 rounded-full overflow-hidden"
                                     style={{
@@ -191,7 +244,7 @@ export default function DetailedBreakdownCard({ analysisResults }: DetailedBreak
                                     />
                                   </div>
                                 </div>
-                                <p className="text-xs mt-1 text-center text-black">
+                                <p className="text-xs mt-1 text-center">
                                   {score}/10
                                 </p>
                               </CardContent>

@@ -76,9 +76,19 @@ export default function FollowupQuestionsCard({
   };
 
   return (
-    <Card className="w-full max-w-xl rounded-md 
-    shadow-[0_6px_15px_rgba(0,0,0,0.05)] 
-    border-none ">
+    <Card
+      className="
+        w-full max-w-xl 
+        rounded-md 
+        shadow-[0_6px_15px_rgba(0,0,0,0.05)] 
+        border border-gray-200 
+        bg-white 
+        text-black 
+        dark:border-none 
+        dark:bg-gradient-to-b dark:from-[#433F4D] dark:to-[#302D39]
+        dark:text-gray-100
+      "
+    >
       <CardHeader className="relative">
         <div>
           <CardTitle>Follow-up Questions</CardTitle>
@@ -113,7 +123,12 @@ export default function FollowupQuestionsCard({
                     placeholder="Optional: Type your response here..."
                     value={responses[index]}
                     onChange={(e) => handleChange(index, e.target.value)}
-                    className="mt-1 w-full"
+                    className="
+                      mt-1 w-full 
+                      dark:bg-[#3B3744]
+                      dark:border-gray-600
+                      dark:text-gray-100
+                    "
                   />
                 </li>
               ))}
