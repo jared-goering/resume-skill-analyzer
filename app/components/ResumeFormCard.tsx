@@ -94,7 +94,7 @@ export default function ResumeFormCard({
                     
                     /* if "upload" is the active mode, fill the button */
                     ${mode === "upload" 
-                        ? "bg-brandBlue text-white dark:bg-brandBlue dark:text-black" 
+                        ? "bg-brandBlue text-white hover:text-brandDark-100 dark:bg-brandBlue dark:text-black" 
                         /* if not active, show an outlined style */
                         : "bg-transparent text-brandBlue dark:bg-brandDark-100 dark:hover:bg-brandDark-200 dark:text-brandBlue"
                     }
@@ -113,7 +113,7 @@ export default function ResumeFormCard({
                         
                         /* if "upload" is the active mode, fill the button */
                         ${mode === "questions" 
-                            ? "bg-brandBlue text-white dark:bg-brandBlue dark:text-black" 
+                            ? "bg-brandBlue text-white dark:bg-brandBlue hover:text-brandDark-100 dark:text-black" 
                             /* if not active, show an outlined style */
                             : "bg-transparent text-brandBlue dark:bg-brandDark-100 dark:hover:bg-brandDark-200 dark:text-brandBlue"
                         }
@@ -287,7 +287,7 @@ export default function ResumeFormCard({
               text-white py-2 px-4 rounded 
               group 
               hover:text-yellow-400
-              bg-indigo-600 dark:bg-brandDark-200
+              bg-brandDark-200 dark:bg-brandDark-200
             "
           >
             <span

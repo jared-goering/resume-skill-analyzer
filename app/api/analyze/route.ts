@@ -97,7 +97,6 @@ export async function POST(req: NextRequest) {
 
     // 4. Build the prompt for OpenAI using the extracted resume text
     console.log("Building prompt for OpenAI...");
-    console.log("Building prompt for OpenAI...");
     const prompt = `
     You are an AI career analyst designed to evaluate resumes for individuals considering returning to school to upskill. Your task is twofold:
     1. Analyze the resume below and rank the user's proficiency in the following predefined skill categories on a scale of 1 to 10. The ranking should be based on work experience, education, certifications, and keywords found in the resume. If a skill is not mentioned or inferred, it should be ranked as 1.
@@ -163,9 +162,9 @@ export async function POST(req: NextRequest) {
       apiKey: process.env.OPENAI_API_KEY,
     });
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-2024-08-06',
+      model: 'o1-preview-2024-09-12',
       messages: [{ role: 'user', content: prompt }],
-      temperature: 0.2,
+      temperature: 1,
     });
     const responseContent = completion.choices[0]?.message?.content;
     console.log("Complete OpenAI response:", responseContent);
