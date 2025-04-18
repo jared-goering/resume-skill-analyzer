@@ -162,9 +162,9 @@ export async function POST(req: NextRequest) {
       apiKey: process.env.OPENAI_API_KEY,
     });
     const completion = await openai.chat.completions.create({
-      model: 'o1-preview-2024-09-12',
+      model: 'gpt-4o-2024-08-06',
       messages: [{ role: 'user', content: prompt }],
-      temperature: 1,
+      temperature: 0.2,
     });
     const responseContent = completion.choices[0]?.message?.content;
     console.log("Complete OpenAI response:", responseContent);

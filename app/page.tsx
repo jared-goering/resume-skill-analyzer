@@ -9,7 +9,7 @@ import ChatBotCard from "./components/ChatBotCard";
 import Image from "next/image";
 
 export default function Home() {
-  const [darkMode, setDarkMode] = useState(false);  // <-- NEW: store dark mode state
+  const [darkMode, setDarkMode] = useState(false);
   const [mode, setMode] = useState<Mode>("upload");
   const [email, setEmail] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -30,7 +30,9 @@ export default function Home() {
   const [error, setError] = useState("");
   const [manualResumeText, setManualResumeText] = useState("");
 
-  // Whenever darkMode changes, add/remove the "dark" class from <html>
+  // NEW: track if the user has finished follow-up questions
+  const [followupsDone, setFollowupsDone] = useState(false);
+
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -41,7 +43,7 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Basic validation...
+    // Basic validation
     if (!email) {
       setError("Please provide your email.");
       return;
@@ -99,6 +101,8 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
 
       const data = await res.json();
       setAnalysis(data);
+      // Reset followupsDone in case user uploads a new resume
+      setFollowupsDone(false);
     } catch (err) {
       setError("Error processing request");
     }
@@ -106,20 +110,19 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
     setLoading(false);
   };
 
-  // If no analysis is available, just show the form
+  // STEP 1: If no analysis yet, show form
   if (!analysis) {
     return (
       <div className="min-h-screen bg-white dark:bg-[#302D39] py-8">
         <header className="flex items-center justify-between mb-8 px-4">
-          {/* Logo */}
-          <Image src="/skillsync logo full.png" alt="Logo" width={250} height={80} />
-          {/* Dark Mode Toggle */}
-          <button
+          <Image
+            src="/skillsync logo full.png"
+            alt="Logo"
+            width={250}
+            height={80}
             onClick={() => setDarkMode((prev) => !prev)}
-            className="bg-gray-200 dark:bg-gray-700 text-sm py-2 px-4 rounded-md"
-          >
-            {darkMode ? "Light Mode" : "Dark Mode"}
-          </button>
+            className="cursor-pointer"
+          />
         </header>
         <div className="mx-auto flex justify-center py-8">
           <ResumeFormCard
@@ -140,18 +143,60 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
     );
   }
 
-  // If analysis is ready, show the 3-column layout
+// STEP 2: If AI returned followupQuestions and user hasn't answered them yet, show ONLY follow-up card
+if (
+  analysis.followupQuestions &&
+  analysis.followupQuestions.length > 0 &&
+  !followupsDone
+) {
+  return (
+    <div className="h-screen w-screen overflow-hidden bg-white dark:bg-[#302D39] flex flex-col">
+      {/* Fixed header */}
+      <header className="flex-shrink-0 p-4 flex items-center justify-between">
+        <Image
+          src="/skillsync logo full.png"
+          alt="Logo"
+          width={200}
+          height={80}
+          onClick={() => setDarkMode((prev) => !prev)}
+          className="cursor-pointer"
+        />
+      </header>
+
+      {/* Main content fills the rest of the screen */}
+      <main className="flex-1 flex items-center justify-center">
+        <FollowupQuestionsCard
+          questions={analysis.followupQuestions || []}
+          email={email}
+          file={file || undefined}
+          manualResume={manualResumeText}
+          originalAnalysis={JSON.stringify(analysis.analysisResults)}
+          onUpdatedAnalysis={(updatedAnalysis) => {
+            setAnalysis({
+              ...analysis,
+              analysisResults: updatedAnalysis,
+              followupQuestions: [],
+            });
+            setFollowupsDone(true);
+          }}
+        />
+      </main>
+    </div>
+  );
+}
+
+  // STEP 3: Otherwise (analysis exists & followups done), show final 3-column layout
   return (
     <div className="min-h-screen bg-white dark:bg-[#302D39] py-8">
       <header className="flex items-center justify-between mb-4 px-4">
-        <Image src="/skillsync logo full.png" alt="Logo" width={200} height={80} />
-        {/* Dark Mode Toggle */}
-        <button
+        <Image
+          src="/skillsync logo full.png"
+          alt="Logo"
+          width={200}
+          height={80}
           onClick={() => setDarkMode((prev) => !prev)}
-          className="bg-gray-200 dark:bg-gray-700 text-sm py-2 px-4 rounded-md"
-        >
-          {darkMode ? "Light Mode" : "Dark Mode"}
-        </button>
+          className="cursor-pointer"
+        />
       </header>
       <div className="container mx-auto py-8">
         <div className="grid grid-cols-3 gap-6 items-start">
@@ -176,23 +221,24 @@ Strongest Skills & Improvement Opportunities: ${qna.strengthsOpportunities}
             />
           </div>
 
-          {/* Column 2: Skills Overview + Follow-up */}
+          {/* Column 2: Skills Overview */}
           <div className="flex flex-col gap-6">
-          <SkillOverviewCard analysisResults={analysis.analysisResults} darkMode={darkMode} />  
-           <FollowupQuestionsCard
-              questions={analysis.followupQuestions || []}
-              email={email}
-              file={file || undefined}
-              manualResume={manualResumeText}
-              originalAnalysis={JSON.stringify(analysis.analysisResults)}
-              onUpdatedAnalysis={(updatedAnalysis) => {
-                setAnalysis({ ...analysis, analysisResults: updatedAnalysis });
-              }}
+            <SkillOverviewCard
+              analysisResults={analysis.analysisResults}
+              darkMode={darkMode}
             />
+            {/* 
+              If you want to allow the user to re-answer follow-ups,
+              you can conditionally show FollowupQuestionsCard again,
+              but typically you'd omit it here once followupsDone is true.
+            */}
           </div>
 
           {/* Column 3: Detailed Breakdown */}
-          <DetailedBreakdownCard analysisResults={analysis.analysisResults} darkMode={darkMode} />
+          <DetailedBreakdownCard
+            analysisResults={analysis.analysisResults}
+            darkMode={darkMode}
+          />
         </div>
       </div>
     </div>

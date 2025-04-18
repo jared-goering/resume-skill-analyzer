@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 interface TimedProgressBarProps {
   loading: boolean;
-  onComplete?: () => void; 
+  onComplete?: () => void;
 }
 
 export default function TimedProgressBar({ loading, onComplete }: TimedProgressBarProps) {
@@ -16,7 +16,7 @@ export default function TimedProgressBar({ loading, onComplete }: TimedProgressB
 
     if (loading) {
       setProgress(0);
-      
+
       // Increase progress ~1.67% every 100ms => ~6s to reach 100%
       interval = setInterval(() => {
         setProgress((prev) => {
@@ -44,13 +44,17 @@ export default function TimedProgressBar({ loading, onComplete }: TimedProgressB
 
   return (
     <div className="mt-4 space-y-2">
-      <div className="relative w-full h-2 bg-gray-200 rounded overflow-hidden">
+      {/* Progress Bar Container */}
+      <div className="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
         <div
-          className="h-full bg-blue-500 animate-pulse"
+          className="h-full bg-blue-500 dark:bg-blue-400 animate-pulse"
           style={{ width: `${progress}%` }}
         />
       </div>
-      <p className="text-sm text-gray-700">Analyzing resume, please wait...</p>
+      {/* Status Text */}
+      <p className="text-sm text-gray-700 dark:text-gray-200">
+        Analyzing resume, please wait...
+      </p>
     </div>
   );
 }
